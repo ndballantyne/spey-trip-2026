@@ -26,9 +26,6 @@
 <!-- ============================================================ -->
 
 <style>
-<!-- ============================================================ -->
-
-<style>
   :root{
     --peat:#1C2620; --river:#3C6E63; --river-deep:#20443E; --river-pale:#8FB3A8;
     --paper:#ECE7DA; --paper-2:#E1DACA; --white:#F8F5EE;
@@ -515,5 +512,23 @@ renderKit();
 </script>
 
 <script>loadGoogleMaps();</script>
+
+<script>
+// CSS integrity self-test — proves the stylesheet loaded intact on THIS render.
+window.addEventListener('load',function(){
+  setTimeout(function(){
+    var kb=document.querySelector('.kitbar');
+    if(!kb) return;
+    var bg=getComputedStyle(kb).backgroundColor;
+    // expected dark green rgb(32, 68, 62)
+    if(bg!=='rgb(32, 68, 62)'){
+      var banner=document.createElement('div');
+      banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#b00;color:#fff;padding:10px;text-align:center;font:600 14px sans-serif';
+      banner.textContent='⚠ CSS did not load correctly — the uploaded file is corrupted the uploaded file is corrupted. Re-upload the file whole instead of pasting its text.';
+      document.body.appendChild(banner);
+    }
+  },500);
+});
+</script>
 </body>
 </html>
