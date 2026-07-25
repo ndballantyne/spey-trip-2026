@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>River Spey Descent · Loch Insh to the Sea</title>
+<!-- ============================================================= -->
+<!--  ⚙️  SETUP — PASTE YOUR THREE VALUES BELOW, THEN SAVE.        -->
+<!--  Nothing else in this file needs editing. Instructions are    -->
+<!--  in the message that came with this file.                     -->
+<!-- ============================================================= -->
+<script>
+  // 1) Your Google Maps JavaScript API key (restricted to your GitHub Pages domain):
+  const GOOGLE_MAPS_KEY = "AIzaSyCFjUCcrF95juk7Yb2AGi-VE0NgGEPWM1o";
+
+  // 2) Your Firebase web config object (from Firebase console → Project settings → your web app):
+  const firebaseConfig = {
+    apiKey: "AIzaSyAQVU8XZBGRYPCiBZHeugnUl65-jL5fUU4",
+    authDomain: "spey-trip-2026.firebaseapp.com",
+    databaseURL: "https://spey-trip-2026-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "spey-trip-2026",
+    storageBucket: "spey-trip-2026.firebasestorage.app",
+    messagingSenderId: "365052641018",
+    appId: "1:365052641018:web:937781db0ddcc2fa8e1343"
+  };
+</script>
+<!-- ============================================================= -->
+<style>
+  :root{
+    --paper:#EDE8DC;--paper-2:#E3DCCB;--ink:#20261F;--ink-soft:#4A5347;
+    --river:#3C6E63;--river-deep:#20443E;--river-pale:#7FA79C;
+    --amber:#C8791F;--amber-pale:#F0D9B8;--line:#C3BAA4;--white:#F7F4EC;
+    --kayak:#2F6E8F;--canoe:#8A5A2B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:4rem}
+  .wrap{max-width:760px;margin:0 auto;padding:0 20px}
+
+  header.hero{padding:3rem 0 1.5rem;text-align:center}
+  .eyebrow{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--river);font-weight:700;margin-bottom:1rem}
+  h1{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:800;font-size:clamp(2.4rem,8vw,4rem);letter-spacing:-.02em;line-height:.95;text-transform:uppercase;font-stretch:condensed}
+  h1 .thin{display:block;font-weight:300;font-size:.42em;letter-spacing:.18em;color:var(--ink-soft);margin-top:.7rem;text-transform:uppercase}
+  .hero-stats{display:flex;justify-content:center;gap:1.6rem;flex-wrap:wrap;margin-top:1.6rem;font-size:.8rem;color:var(--ink-soft)}
+  .hero-stats b{display:block;font-size:1.5rem;color:var(--ink);font-weight:800;line-height:1}
+  .hero-stats span{letter-spacing:.05em;text-transform:uppercase;font-size:.66rem}
+
+  .profile{margin:2rem auto 0;max-width:520px}
+  .profile-label{display:flex;justify-content:space-between;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.4rem}
+  .profile-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;border:1px solid var(--line)}
+  .profile-bar i{flex:1}
+
+  /* crew */
+  .crew{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:1.8rem}
+  .boat{display:flex;align-items:center;gap:8px;background:var(--white);border:1px solid var(--line);border-radius:30px;padding:6px 14px 6px 8px;font-size:.82rem}
+  .boat .tag{font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:3px 8px;border-radius:20px}
+  .tag.kayak{background:var(--kayak)}
+  .tag.canoe{background:var(--canoe)}
+  .boat b{font-weight:600}
+
+  main{position:relative;margin-top:2.5rem}
+  .river-line{position:absolute;left:calc(50% - 1px);top:0;bottom:0;width:2px;background:var(--river-pale);z-index:0}
+  @media(max-width:620px){.river-line{left:23px}}
+  .day{position:relative;z-index:1;margin:0 0 1.1rem}
+  .day-card{background:var(--white);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.03);transition:border-color .2s,box-shadow .2s}
+  .day-card.open{border-color:var(--river);box-shadow:0 8px 30px -12px rgba(32,68,62,.35)}
+  .day-head{display:grid;grid-template-columns:54px 1fr auto;gap:14px;align-items:center;padding:16px 18px;cursor:pointer;user-select:none}
+  .daynum{width:54px;height:54px;border-radius:50%;background:var(--river);color:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;line-height:1}
+  .daynum small{font-size:.5rem;letter-spacing:.15em;opacity:.8;text-transform:uppercase;margin-bottom:2px}
+  .daynum b{font-size:1.4rem}
+  .day-title{min-width:0}
+  .day-route{font-weight:700;font-size:1.02rem;letter-spacing:-.01em}
+  .day-meta{font-size:.78rem;color:var(--ink-soft);margin-top:2px}
+  .grade-pill{font-size:.66rem;font-weight:800;letter-spacing:.06em;padding:4px 9px;border-radius:20px;white-space:nowrap;text-transform:uppercase}
+  .g1{background:#D6E4DE;color:var(--river-deep)}
+  .g12{background:#C3DBCF;color:var(--river-deep)}
+  .g23{background:var(--amber-pale);color:var(--amber)}
+  .chev{width:18px;height:18px;fill:var(--ink-soft);transition:transform .25s;margin-left:2px}
+  .day-card.open .chev{transform:rotate(180deg)}
+  .day-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+  .day-body-inner{padding:2px 18px 20px}
+  .divider{height:1px;background:var(--line);margin:0 0 16px}
+  .leg{display:flex;gap:12px;margin-bottom:14px}
+  .leg-ico{flex:none;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.9rem;margin-top:1px}
+  .ico-in{background:#D6E4DE}.ico-out{background:#D6E4DE}.ico-stay{background:#E7DAC4}.ico-haz{background:var(--amber-pale)}
+  .leg-txt{flex:1;min-width:0}
+  .leg-label{font-size:.64rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+  .leg-name{font-weight:600;font-size:.96rem;margin:1px 0 2px}
+  .leg-note{font-size:.85rem;color:var(--ink-soft)}
+  .leg.hazard .leg-name{color:var(--amber)}
+  .leg.hazard .leg-note{color:#8a5a1a}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+  .btn{font-size:.76rem;font-weight:600;text-decoration:none;padding:7px 12px;border-radius:9px;border:1px solid var(--line);color:var(--ink);background:var(--paper);display:inline-flex;align-items:center;gap:6px;transition:background .15s,border-color .15s;cursor:pointer}
+  .btn:hover{background:var(--paper-2);border-color:var(--river-pale)}
+  .btn.map{background:var(--river);color:var(--white);border-color:var(--river)}
+  .btn.map:hover{background:var(--river-deep)}
+  .shuttle{display:flex;gap:10px;background:var(--amber-pale);border-left:3px solid var(--amber);border-radius:8px;padding:11px 13px;margin-top:6px}
+  .shuttle .leg-label{color:var(--amber)}
+  .shuttle-txt{font-size:.83rem;color:#7a4f14}
+
+  section.block{margin-top:3rem}
+  .block-head{display:flex;align-items:baseline;gap:12px;margin-bottom:1.1rem}
+  .block-head h2{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:800;font-size:1.5rem;letter-spacing:-.01em;text-transform:uppercase;font-stretch:condensed}
+  .block-head .rule{flex:1;height:1px;background:var(--line)}
+
+  /* map */
+  .map-card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:10px;overflow:hidden}
+  #routemap{width:100%;height:460px;border-radius:10px;z-index:0}
+  .leaflet-container{background:#dfe6e2;font:inherit}
+  .pin-pop{font-size:.82rem;line-height:1.4}
+  .pin-pop b{display:block;font-size:.9rem;margin-bottom:2px}
+  .pin-pop a{color:var(--river);font-weight:700;text-decoration:none;display:inline-block;margin-top:4px}
+  .map-legend{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--ink-soft);padding:10px 6px 4px}
+  .map-legend span{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+  /* identity bar */
+  .who{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:1.2rem;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+  .who label{font-size:.8rem;color:var(--ink-soft);font-weight:600}
+  .who select{font-size:.9rem;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-weight:600}
+  .who .hint{font-size:.74rem;color:var(--ink-soft);flex-basis:100%}
+
+  .kit-grid{display:grid;grid-template-columns:1fr;gap:1.2rem}
+  @media(min-width:620px){.kit-grid{grid-template-columns:1fr 1fr}}
+  .kit-col{background:var(--white);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .kit-col h3{font-size:.9rem;text-transform:uppercase;letter-spacing:.08em;color:var(--river);margin-bottom:.3rem;display:flex;align-items:center;gap:8px}
+  .kit-col h3 .badge{font-size:.58rem;font-weight:800;letter-spacing:.06em;padding:3px 8px;border-radius:20px;text-transform:uppercase}
+  .badge.shared{background:var(--river);color:#fff}
+  .badge.mine{background:var(--paper-2);color:var(--ink-soft)}
+  .kit-col .sub{font-size:.76rem;color:var(--ink-soft);margin-bottom:.8rem}
+  .check{display:flex;align-items:flex-start;gap:9px;padding:5px 0;cursor:pointer;font-size:.88rem}
+  .check input{margin-top:3px;accent-color:var(--river);width:15px;height:15px;flex:none}
+  .check.done span.lbl{text-decoration:line-through;color:var(--river-pale)}
+  .check .by{font-size:.68rem;color:var(--river);font-weight:700;margin-left:auto;white-space:nowrap;padding-left:8px}
+  .kit-note{font-size:.78rem;color:var(--ink-soft);margin-top:.5rem;padding-top:.6rem;border-top:1px dashed var(--line)}
+  .flag{color:var(--amber);font-weight:600}
+  .synced{font-size:.7rem;color:var(--river);margin-top:.6rem;display:flex;align-items:center;gap:6px}
+  .synced .live{width:7px;height:7px;border-radius:50%;background:var(--river);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .matrix{width:100%;border-collapse:collapse;font-size:.85rem;background:var(--white);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .matrix th,.matrix td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line)}
+  .matrix th{background:var(--paper-2);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .matrix tr:last-child td{border-bottom:none}
+  .matrix td:first-child{font-weight:600;white-space:nowrap}
+
+  .contacts{display:grid;grid-template-columns:1fr;gap:8px}
+  @media(min-width:620px){.contacts{grid-template-columns:1fr 1fr}}
+  .contact{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:11px 14px}
+  .contact .cn{font-weight:600;font-size:.88rem}
+  .contact .cm{font-size:.74rem;color:var(--ink-soft)}
+  .contact a{font-size:.82rem;font-weight:600;color:var(--river);text-decoration:none;white-space:nowrap}
+
+  .todo{background:var(--amber-pale);border:1px solid var(--amber);border-radius:12px;padding:16px 18px;margin-top:1.2rem}
+  .todo h3{color:var(--amber);font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem}
+  .todo li{font-size:.86rem;color:#7a4f14;margin-left:1.1rem;margin-bottom:.35rem}
+
+  footer{text-align:center;margin-top:3.5rem;font-size:.74rem;color:var(--ink-soft);line-height:1.7}
+  footer .party{font-weight:600;color:var(--ink)}
+  .reset{background:none;border:none;color:var(--river-pale);font-size:.72rem;text-decoration:underline;cursor:pointer;margin-top:.8rem}
+</style></head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">5-Day Descent · Cairngorms to the Moray Firth</div>
+    <h1>River Spey<span class="thin">Loch Insh to the Sea</span></h1>
+    <div class="hero-stats">
+      <div><b>113.6</b><span>km total</span></div>
+      <div><b>5</b><span>days on water</span></div>
+      <div><b>1→3→1</b><span>grade profile</span></div>
+      <div><b>6</b><span>paddlers · 3 boats</span></div>
+    </div>
+    <div class="profile">
+      <div class="profile-label"><span>Loch Insh</span><span>the crux</span><span>Spey Bay</span></div>
+      <div class="profile-bar">
+        <i style="background:var(--river-pale)"></i><i style="background:var(--river)"></i><i style="background:var(--amber)"></i><i style="background:var(--river)"></i><i style="background:var(--river-pale)"></i>
+      </div>
+      <div class="profile-label" style="margin-top:.35rem"><span>Gd 1</span><span>Gd 1/2</span><span>Gd 2/3</span><span>Gd 1/2</span><span>Gd 1</span></div>
+    </div>
+    <div class="crew">
+      <div class="boat"><span class="tag kayak">Kayak</span><b>Neil &amp; James</b><span style="color:var(--ink-soft)">· crossovers</span></div>
+      <div class="boat"><span class="tag canoe">Canoe</span><b>Fraser &amp; Dagmar</b></div>
+      <div class="boat"><span class="tag canoe">Canoe</span><b>Michael &amp; Rory</b></div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap" style="position:relative">
+    <div class="river-line"></div>
+    <div id="days"></div>
+  </div>
+</main>
+
+<div class="wrap">
+
+  <!-- MAP -->
+  <section class="block">
+    <div class="block-head"><h2>The route</h2><div class="rule"></div></div>
+    <div class="map-card">
+      <div id="routemap"></div>
+      <div class="map-legend">
+        <span><i class="dot" style="background:var(--river)"></i> Put-in / take-out</span>
+        <span><i class="dot" style="background:var(--amber)"></i> Hazard</span>
+        <span><i class="dot" style="background:var(--ink)"></i> Overnight</span>
+        <span>Click a pin for details + directions</span>
+      </div>
+    </div>
+    <p style="font-size:.76rem;color:var(--ink-soft);margin-top:.7rem">Zoomable map (Google Maps). Pins are James's confirmed drops — click any pin for its note and a Directions link. Knockando's spot is approximate; inspect on arrival.</p>
+  </section>
+
+  <!-- CONDITIONS -->
+  <section class="block">
+    <div class="block-head"><h2>What to wear</h2><div class="rule"></div></div>
+    <p style="font-size:.85rem;color:var(--ink-soft);margin-bottom:1rem">Snow-fed water stays cold even in summer. Match the layer to the day <em>and</em> the weather. On the tricky days a swim is likeliest, so immersion protection wins over paddling comfort. (Kayakers: spraydeck on for days 3 &amp; 4.)</p>
+    <table class="matrix">
+      <tr><th>Conditions</th><th>Wear</th></tr>
+      <tr><td>Easy day · fair</td><td>Shorty + PFD</td></tr>
+      <tr><td>Easy day · poor</td><td>Thermal base layer + cag</td></tr>
+      <tr><td>Tricky day · fair</td><td>4/3 wetsuit (core warmth, free shoulders)</td></tr>
+      <tr><td>Tricky day · poor</td><td>4/3 + cag — vent it or carry it; don't cook on the 41km</td></tr>
+      <tr><td>Semi-dry option</td><td>Thermal + 3mm neoprene trousers + cag</td></tr>
+    </table>
+    <p class="kit-note" style="border:none;margin-top:.7rem"><span class="flag">Before day 3:</span> run a full wet-exit rotation and hard strokes on dry land in whatever you'll wear — check nothing binds the shoulders.</p>
+  </section>
+
+  <!-- KIT -->
+  <section class="block">
+    <div class="block-head"><h2>Kit checklist</h2><div class="rule"></div></div>
+    <div class="who">
+      <label for="whoami">You're packing as:</label>
+      <select id="whoami" onchange="setPaddler()">
+        <option value="">— choose your name —</option>
+        <option>Neil</option><option>James</option><option>Fraser</option><option>Dagmar</option><option>Michael</option><option>Rory</option>
+      </select>
+      <span class="hint">Your <b>personal</b> list is yours alone. The <b>group</b> list is shared live — whatever anyone ticks, everyone sees, with who sorted it.</span>
+    </div>
+    <div class="kit-grid" id="kit"></div>
+    <button class="reset" onclick="resetMine()">Reset my personal list</button>
+  </section>
+
+  <!-- CONTACTS -->
+  <section class="block">
+    <div class="block-head"><h2>Beds &amp; numbers</h2><div class="rule"></div></div>
+    <div class="contacts" id="contacts"></div>
+    <div class="todo">
+      <h3>Still to sort</h3>
+      <ul>
+        <li><b>Day 3 shuttle</b> — leave a vehicle at the Aberlour take-out; the Craigellachie bed is ~5km on and you relaunch from Aberlour on day 4.</li>
+        <li><b>Dagmar's Grantown room (night 2)</b> — flagged as possibly outstanding. Check with Fraser.</li>
+        <li><b>Night 5 bed</b> — confirm the Spey Bay / Garmouth accommodation and add it here.</li>
+        <li><b>Throwline count</b> — one per confident paddler, not one for the group.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="party">Neil · James · Fraser · Dagmar · Michael · Rory</div>
+    Two Canadian canoes (Fraser &amp; Dagmar, Michael &amp; Rory) + two crossover kayaks (Neil, James).<br>
+    Put-in / take-out pins are James's confirmed drops. Knockando's exact spot is approximate — inspect on arrival.<br>
+    Tap any day to expand · tap a pin for directions · your personal kit is private, the group list is shared live.
+  </div>
+</footer>
+
+<script>
+const days = [
+  {n:1, route:"Loch Insh → Aviemore", km:"11.3 km", grade:"Gd 1", gclass:"g1",
+   summary:"Easy opener. Loch/river wind and trees on the bends are the only things to watch.",
+   legs:[
+     {t:"in",label:"Put-in",name:"Near Loch Insh",note:"Launch into the upper Spey just below the loch — avoids a wind-exposed loch slog to start. All six on the water from here.",lat:57.1261482,lng:-3.9248624},
+     {t:"out",label:"Take-out",name:"Aviemore · Old Bridge Bunkhouse",note:"Exit right at the bunkhouse on the river. Doubles as tomorrow's put-in.",lat:57.1837957,lng:-3.8299229},
+     {t:"stay",label:"Night 1",name:"Old Bridge Bunkhouse — 4-bunk room",note:"Pub & restaurant downstairs.",lat:57.1838545,lng:-3.830408}
+   ]},
+  {n:2, route:"Aviemore → Grantown", km:"24.6 km", grade:"Gd 1/2", gclass:"g12",
+   summary:"Pace picks up. Gravel rapids and braided channels — pick the main flow, mind sweepers.",
+   legs:[
+     {t:"in",label:"Put-in",name:"Aviemore · Old Bridge Bunkhouse",note:"Relaunch from the bunkhouse.",lat:57.1837957,lng:-3.8299229},
+     {t:"out",label:"Take-out",name:"Grantown · Old Spey Bridge",note:"Exit SE of town by the old bridge. About 1.5km from the hotel.",lat:57.3196585,lng:-3.6137972},
+     {t:"stay",label:"Night 2",name:"Ben Mhor Hotel, Grantown",note:"In town. Check Dagmar's room is booked here.",lat:57.3295808,lng:-3.6099836}
+   ]},
+  {n:3, route:"Grantown → Aberlour", km:"41.4 km", grade:"Gd 2/3", gclass:"g23",
+   summary:"The big one — long day plus the trip's only grade 3. Solid moving-water skills; early start.",
+   legs:[
+     {t:"in",label:"Put-in",name:"Grantown · Old Spey Bridge",note:"Early start — 41km ahead. Relaunch at the old bridge.",lat:57.3196585,lng:-3.6137972},
+     {t:"haz",label:"Hazard · mid-leg",name:"Knockando rapids — Gd 3 crux",note:"The hardest water of the week. Inspect on arrival; portage line available. Highest swim risk — immersion kit on, kayak decks fitted. Canoes: consider lining/portaging if it's up. (Exact spot approximate.)",lat:57.4103,lng:-3.3706},
+     {t:"out",label:"Take-out",name:"Aberlour",note:"Exit at Aberlour, then ~5km by road to the Craigellachie bed. Also day 4's put-in.",lat:57.4693257,lng:-3.2333641},
+     {t:"stay",label:"Night 3",name:"Highlander Inn, Craigellachie",note:"The whisky stop — evening meal booked.",lat:57.4898031,lng:-3.1889117}
+   ],
+   shuttle:"Leave a vehicle at the Aberlour take-out overnight, or arrange a lift back to it next morning — you relaunch from Aberlour on day 4."},
+  {n:4, route:"Aberlour → Fochabers", km:"26.3 km", grade:"Gd 1/2", gclass:"g12",
+   summary:"Fast and powerful rather than technical. Pushy wave trains when the river's up.",
+   legs:[
+     {t:"in",label:"Put-in",name:"Aberlour",note:"Shuttle back from Craigellachie to the Aberlour put-in.",lat:57.4693257,lng:-3.2333641},
+     {t:"haz",label:"Feature · mid-leg",name:"Boat o' Brig wave trains",note:"Fast, powerful water and wave trains — not technical, but pushy when high. Canoes take on water here — bail as needed.",lat:57.5509736,lng:-3.1417779},
+     {t:"out",label:"Take-out",name:"Fochabers",note:"Exit near Fochabers, west bank below the bridge. Also day 5's put-in.",lat:57.6147007,lng:-3.1050492},
+     {t:"stay",label:"Night 4",name:"Gordon Arms Hotel, Fochabers",note:"In town, short hop from the take-out.",lat:57.6149444,lng:-3.0995265}
+   ]},
+  {n:5, route:"Fochabers → Spey Bay", km:"10.0 km", grade:"Gd 1", gclass:"g1",
+   summary:"Short final leg. River braids near the mouth — wrong channel means dragging over shingle. Exposed, windy finish.",
+   legs:[
+     {t:"in",label:"Put-in",name:"Fochabers",note:"Relaunch near Fochabers for the short run to the coast.",lat:57.6147007,lng:-3.1050492},
+     {t:"out",label:"Finish!",name:"Spey Bay · Garmouth / Kingston side",note:"Journey's end on the WEST bank — not the Dolphin Centre across the estuary. Pickup vehicle on the Garmouth side.",lat:57.675044,lng:-3.1081787}
+   ]}
+];
+
+const kit = {
+  personal:{title:"Personal", badge:"mine", badgeText:"Yours", sub:"Each paddler packs their own",
+    items:["Helmet","Buff + skullcap","Shorty wetsuit","4/3 wetsuit","LIFA / thermal base layers","Paddling cag","Buoyancy aid (PFD)","River knife on PFD","Paddling gloves","Wetsuit boots + neoprene socks","Sunglasses + lanyard","Sunscreen + SPF lip balm","Whistle","Waterproof water bottle","Phone case (waterproof)","Head torch + spare batteries","Power bank + cable","Dry bag + mini drybags","Full dry change (sealed drybag)","Midge repellent + head net","Personal first-aid bits / meds","Toilet paper","Spraydeck (kayakers)"],
+    note:"<span class='flag'>Flagged:</span> sealed dry change and a head net — you'll want both."},
+  group:{title:"Group", badge:"shared", badgeText:"Shared live", sub:"Pool it — tick shows for everyone, with who sorted it",
+    items:["First aid kit (group, waterproofed)","Spare split paddle","Throwlines — 1 per confident paddler","Sling + 2 screwgate karabiners","Spare line (lashing / towing)","Bailer + sponges (canoes)","Boat pump","Duct / Gorilla / Denso tape","Plumber's epoxy putty (holed hull)","Cable ties","Group bothy / storm shelter (2–4)","Waterproof map + route notes","Axe (camp only — not rescue kit)"],
+    note:"<span class='flag'>Note:</span> the axe is camp-only; the on-water cutting tool is a knife on each PFD."}
+};
+
+
+const contacts = [
+  {cn:"Old Bridge Bunkhouse",cm:"Night 1 · Aviemore",tel:"+441479811181"},
+  {cn:"Ben Mhor Hotel",cm:"Night 2 · Grantown",tel:"+441479872056"},
+  {cn:"Highlander Inn",cm:"Night 3 · Craigellachie (meal booked)",tel:"+441340881446"},
+  {cn:"Gordon Arms Hotel",cm:"Night 4 · Fochabers",tel:"+441343820508"},
+  {cn:"Spey Bay bed",cm:"Night 5 · confirm & add number",tel:""}
+];
+window.days=days; window.kit=kit; window.contacts=contacts;
+</script>
+<script type="module">
+const days=window.days, kit=window.kit, contacts=window.contacts;
+// ---------- FIREBASE (shared group list, live sync) ----------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, onValue, set as dbSet, remove as dbRemove }
+  from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+let db=null, groupState={};
+try{
+  const app=initializeApp(FIREBASE_CONFIG);
+  db=getDatabase(app);
+  // live listener: whenever anyone changes the group list, everyone re-renders
+  onValue(ref(db,'group'), snap=>{
+    groupState = snap.val() || {};
+    renderKit();
+  }, err=>{ console.error('firebase',err); });
+}catch(e){ console.error('firebase init',e); }
+
+window.flipGroup = async function(i,box){
+  const who = paddler || 'someone';
+  try{
+    if(box.checked){ await dbSet(ref(db,'group/g'+i), {done:true, by:who}); }
+    else{ await dbRemove(ref(db,'group/g'+i)); }
+  }catch(e){ alert('Could not reach the shared list — check your connection.'); box.checked=!box.checked; }
+};
+
+// ---------- PERSONAL LIST (this device only, via localStorage) ----------
+// Personal packing is per-person and doesn't need sharing, so it lives on the device.
+let paddler="", personalState={};
+window.setPaddler = function(){
+  paddler=document.getElementById('whoami').value;
+  try{ personalState = JSON.parse(localStorage.getItem('spey:personal:'+paddler)||'{}'); }catch(e){ personalState={}; }
+  renderKit();
+};
+window.flipPersonal = function(i,box){
+  if(!paddler){ alert('Pick your name first so your personal list saves to you.'); box.checked=!box.checked; return; }
+  personalState['p'+i]=box.checked;
+  try{ localStorage.setItem('spey:personal:'+paddler, JSON.stringify(personalState)); }catch(e){}
+  renderKit();
+};
+window.resetMine = function(){
+  if(!paddler){ alert('Pick your name first.'); return; }
+  personalState={};
+  try{ localStorage.removeItem('spey:personal:'+paddler); }catch(e){}
+  renderKit();
+};
+
+// ---------- RENDER KIT ----------
+window.renderKit = function(){
+  const kitEl=document.getElementById('kit');
+  kitEl.innerHTML='';
+  const p=kit.personal;
+  const pRows=p.items.map((it,i)=>{
+    const done=personalState['p'+i];
+    return `<label class="check ${done?'done':''}"><input type="checkbox" ${done?'checked':''} onchange="flipPersonal(${i},this)"><span class="lbl">${it}</span></label>`;
+  }).join('');
+  const pdiv=document.createElement('div');pdiv.className='kit-col';
+  pdiv.innerHTML=`<h3>${p.title} <span class="badge mine">${p.badgeText}</span></h3><div class="sub">${p.sub}${paddler?' · <b>'+paddler+'</b>':''}</div>${pRows}<div class="kit-note">${p.note}</div>`;
+  kitEl.appendChild(pdiv);
+  const g=kit.group;
+  const gRows=g.items.map((it,i)=>{
+    const st=groupState['g'+i];
+    const by=st&&st.done?`<span class="by">✓ ${st.by}</span>`:'';
+    return `<label class="check ${st&&st.done?'done':''}"><input type="checkbox" ${st&&st.done?'checked':''} onchange="flipGroup(${i},this)"><span class="lbl">${it}</span>${by}</label>`;
+  }).join('');
+  const gdiv=document.createElement('div');gdiv.className='kit-col';
+  gdiv.innerHTML=`<h3>${g.title} <span class="badge shared">${g.badgeText}</span></h3><div class="sub">${g.sub}</div>${gRows}<div class="kit-note">${g.note}</div><div class="synced"><span class="live"></span> Live-synced across everyone with the link</div>`;
+  kitEl.appendChild(gdiv);
+};
+
+// contacts
+const cEl=document.getElementById('contacts');
+contacts.forEach(c=>{const div=document.createElement('div');div.className='contact';const link=c.tel?`<a href="tel:${c.tel}">Call →</a>`:`<span class="cm">—</span>`;div.innerHTML=`<div><div class="cn">${c.cn}</div><div class="cm">${c.cm}</div></div>${link}`;cEl.appendChild(div)});
+
+// day cards
+window.toggle=function(n){const card=document.querySelector(`.day-card[data-day="${n}"]`);const body=document.getElementById('body-'+n);const open=card.classList.toggle('open');body.style.maxHeight=open?body.scrollHeight+'px':'0'};
+const iconFor={in:"⤓",out:"⤒",stay:"⌂",haz:"▲"};
+const classFor={in:"ico-in",out:"ico-out",stay:"ico-stay",haz:"ico-haz"};
+const daysEl=document.getElementById('days');
+days.forEach(d=>{
+  const legsHtml=d.legs.map(l=>{
+    const gmaps=`https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
+    const hazard=l.t==='haz'?' hazard':'';
+    return `<div class="leg${hazard}"><div class="leg-ico ${classFor[l.t]}">${iconFor[l.t]}</div><div class="leg-txt"><div class="leg-label">${l.label}</div><div class="leg-name">${l.name}</div><div class="leg-note">${l.note}</div><div class="actions"><a class="btn map" href="${gmaps}" target="_blank" rel="noopener">◆ Directions</a></div></div></div>`;
+  }).join('');
+  const shuttle=d.shuttle?`<div class="shuttle"><div class="leg-ico ico-haz">⇄</div><div><div class="leg-label">Shuttle</div><div class="shuttle-txt">${d.shuttle}</div></div></div>`:'';
+  const el=document.createElement('div');el.className='day';
+  el.innerHTML=`<div class="day-card" data-day="${d.n}"><div class="day-head" onclick="toggle(${d.n})"><div class="daynum"><small>Day</small><b>${d.n}</b></div><div class="day-title"><div class="day-route">${d.route}</div><div class="day-meta">${d.km} · ${d.summary}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="grade-pill ${d.gclass}">${d.grade}</span><svg class="chev" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div></div><div class="day-body" id="body-${d.n}"><div class="day-body-inner"><div class="divider"></div>${legsHtml}${shuttle}</div></div></div>`;
+  daysEl.appendChild(el);
+});
+
+// ---------- GOOGLE MAPS ----------
+const mapPins = [
+  {lat:57.1261482,lng:-3.9248624,type:"in",  name:"Day 1 put-in · near Loch Insh"},
+  {lat:57.1837957,lng:-3.8299229,type:"stay",name:"Aviemore · Old Bridge Bunkhouse (night 1 + Day 2 put-in)"},
+  {lat:57.3196585,lng:-3.6137972,type:"stay",name:"Grantown · Old Spey Bridge take-out (night 2)"},
+  {lat:57.4103,   lng:-3.3706,   type:"haz", name:"Knockando rapids · Grade 3 crux (approx)"},
+  {lat:57.4693257,lng:-3.2333641,type:"stay",name:"Aberlour take-out → Craigellachie (night 3)"},
+  {lat:57.5509736,lng:-3.1417779,type:"haz", name:"Boat o' Brig · wave trains"},
+  {lat:57.6147007,lng:-3.1050492,type:"stay",name:"Fochabers take-out (night 4)"},
+  {lat:57.675044, lng:-3.1081787,type:"out", name:"Spey Bay · finish (Garmouth/Kingston side)"}
+];
+const pinColour={in:"#3C6E63",out:"#3C6E63",stay:"#20261F",haz:"#C8791F"};
+window.initMap = function(){
+  const map=new google.maps.Map(document.getElementById('routemap'),{
+    mapTypeId:'terrain', mapTypeControl:true, streetViewControl:false, fullscreenControl:true
+  });
+  const bounds=new google.maps.LatLngBounds();
+  const path=mapPins.map(p=>{const ll={lat:p.lat,lng:p.lng};bounds.extend(ll);return ll;});
+  new google.maps.Polyline({path,map,strokeColor:"#3C6E63",strokeOpacity:.8,strokeWeight:4});
+  new google.maps.Polyline({path:[path[2],path[3],path[4]],map,strokeColor:"#C8791F",strokeOpacity:.8,strokeWeight:6});
+  const info=new google.maps.InfoWindow();
+  mapPins.forEach(p=>{
+    const mk=new google.maps.Marker({position:{lat:p.lat,lng:p.lng},map,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:p.type==='haz'?8:6,fillColor:pinColour[p.type],fillOpacity:1,strokeColor:"#F7F4EC",strokeWeight:2.5}});
+    const dir=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
+    mk.addListener('click',()=>{info.setContent(`<div class="pin-pop"><b>${p.name}</b><a href="${dir}" target="_blank" rel="noopener">Directions →</a></div>`);info.open(map,mk);});
+  });
+  map.fitBounds(bounds,60);
+};
+function loadGoogleMaps(){
+  if(!GOOGLE_MAPS_KEY || GOOGLE_MAPS_KEY.indexOf('PASTE')===0){
+    document.getElementById('routemap').innerHTML='<div style="padding:2rem;text-align:center;color:#4A5347;font-size:.85rem">Add your Google Maps key in the setup block at the top of this file to show the map. The Directions buttons in each day below work regardless.</div>';
+    return;
+  }
+  const s=document.createElement('script');
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap&loading=async`;
+  s.async=true;
+  s.onerror=()=>{document.getElementById('routemap').innerHTML='<div style="padding:2rem;text-align:center;color:#4A5347">Map failed to load — check the API key restrictions.</div>';};
+  document.head.appendChild(s);
+}
+
+// init
+toggle(1);
+renderKit();
+loadGoogleMaps();
+
+</script>
+</body>
+</html>
