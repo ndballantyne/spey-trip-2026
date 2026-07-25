@@ -26,6 +26,9 @@
 <!-- ============================================================ -->
 
 <style>
+<!-- ============================================================ -->
+
+<style>
   :root{
     --peat:#1C2620; --river:#3C6E63; --river-deep:#20443E; --river-pale:#8FB3A8;
     --paper:#ECE7DA; --paper-2:#E1DACA; --white:#F8F5EE;
@@ -104,11 +107,6 @@
   .shuttle-txt{font-size:.82rem;color:#7a4f14}
 
   /* kit toggle strip below */
-  .kitbar{flex:none;border-top:1px solid var(--line);background:var(--white)}
-  .kit-toggle{width:100%;text-align:left;padding:11px 20px;background:none;border:none;font-weight:700;font-size:.9rem;color:var(--peat);cursor:pointer;display:flex;align-items:center;gap:10px}
-  .kit-toggle .chev{margin-left:auto;transition:transform .2s}
-  .kit-toggle.open .chev{transform:rotate(180deg)}
-  .kit-wrap{max-height:0;overflow:hidden;transition:max-height .3s}
   .kit-inner{padding:0 20px 22px}
   .who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
   .who select{font-size:.88rem;padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-weight:600}
@@ -128,6 +126,34 @@
   .live{width:7px;height:7px;border-radius:50%;background:var(--river);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   .maperr{padding:2rem;text-align:center;color:var(--slate);font-size:.85rem}
+
+  /* overview tab accent */
+  .tab-ov.active{border-bottom-color:var(--river)}
+  .tab-ov .tk{font-weight:800}
+
+  /* crew list */
+  .crew-list{display:flex;flex-direction:column;gap:9px}
+  .crew-row{display:flex;gap:11px;align-items:center;background:var(--white);border:1px solid var(--line);border-radius:11px;padding:10px 13px}
+  .crew-tag{font-size:.6rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:4px 9px;border-radius:20px;flex:none}
+  .crew-people{font-weight:700;font-size:.92rem}
+  .crew-note{font-size:.76rem;color:var(--slate)}
+
+  /* overview day rows */
+  .ov-days{display:flex;flex-direction:column;gap:7px}
+  .ov-day{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:var(--white);border:1px solid var(--line);border-radius:10px;padding:10px 13px;cursor:pointer;transition:all .15s}
+  .ov-day:hover{border-color:var(--river-pale);transform:translateX(2px)}
+  .ov-daynum{font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;color:var(--slate);font-weight:800;flex:none;width:44px}
+  .ov-dayroute{font-weight:600;font-size:.88rem;flex:1;min-width:0}
+  .ov-daymeta{font-size:.76rem;color:var(--slate);flex:none}
+
+  /* kit bar — made prominent */
+  .kitbar{flex:none;border-top:2px solid var(--river);background:var(--river-deep)}
+  .kit-toggle{width:100%;text-align:left;padding:14px 20px;background:none;border:none;font-weight:800;font-size:.98rem;color:#fff;cursor:pointer;display:flex;align-items:center;gap:10px;letter-spacing:.01em}
+  .kit-toggle .ksub{font-weight:500;color:var(--river-pale);font-size:.8rem}
+  .kit-toggle .kbadge{background:var(--amber);color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px;margin-left:4px}
+  .kit-toggle .chev{margin-left:auto;transition:transform .2s;color:#fff}
+  .kit-toggle.open .chev{transform:rotate(180deg)}
+  .kit-wrap{max-height:0;overflow:hidden;transition:max-height .3s;background:var(--paper)}
 </style>
 </head>
 <body>
@@ -147,7 +173,7 @@
   </div>
 
   <div class="kitbar">
-    <button class="kit-toggle" id="kitToggle" onclick="toggleKit()">Kit checklist <span style="font-weight:400;color:var(--slate);font-size:.78rem">— personal + shared group list</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
+    <button class="kit-toggle" id="kitToggle" onclick="toggleKit()">Kit checklist <span class="kbadge">tap to open</span><span class="ksub">personal + live shared group list</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
     <div class="kit-wrap" id="kitWrap">
       <div class="kit-inner">
         <div class="who">
@@ -205,7 +231,18 @@ const KIT = {
 };
 
 // ---------------- TABS ----------------
+const CREW=[
+  {boat:"Kayak",kind:"kayak",people:"Neil & James",note:"crossover kayaks"},
+  {boat:"Canoe",kind:"canoe",people:"Fraser & Dagmar",note:"Canadian canoe"},
+  {boat:"Canoe",kind:"canoe",people:"Michael & Rory",note:"Canadian canoe"}
+];
 const tabsEl=document.getElementById('tabs');
+// Overview tab first
+const ov=document.createElement('button');
+ov.className='tab tab-ov'; ov.id='tab-0';
+ov.onclick=()=>selectOverview();
+ov.innerHTML=`<div class="td">Trip</div><div class="tk">Overview</div><span class="tg" style="background:var(--river);color:#fff">ALL</span>`;
+tabsEl.appendChild(ov);
 DAYS.forEach(d=>{
   const b=document.createElement('button');
   b.className='tab'; b.id='tab-'+d.n;
@@ -216,6 +253,25 @@ DAYS.forEach(d=>{
 });
 
 // ---------------- PANEL ----------------
+function renderOverview(){
+  const crewRows=CREW.map(c=>{
+    const col=c.kind==='kayak'?'var(--river)':'var(--canoe)';
+    return `<div class="crew-row"><span class="crew-tag" style="background:${col}">${c.boat}</span><div class="crew-body"><div class="crew-people">${c.people}</div><div class="crew-note">${c.note}</div></div></div>`;
+  }).join('');
+  const dayRows=DAYS.map(d=>{
+    const gcol=d.gc==='g1'?'var(--g1)':d.gc==='g12'?'var(--g12)':'var(--g23)';
+    return `<button class="ov-day" onclick="selectDay(${d.n})"><span class="ov-daynum">Day ${d.n}</span><span class="ov-dayroute">${d.route}</span><span class="ov-daymeta">${d.km}</span><span class="p-grade" style="background:${gcol}">${d.grade}</span></button>`;
+  }).join('');
+  document.getElementById('panel').innerHTML=`
+    <div class="p-day">The trip</div>
+    <div class="p-route">Loch Insh → Spey Bay</div>
+    <div class="p-meta"><span>113.6 km</span><span>5 days</span><span>Grade 1 → 3 → 1</span></div>
+    <div class="p-summary">A five-day descent from the Cairngorms to the Moray Firth, building from easy grade 1 water to the grade 3 crux at Knockando on Day 3, then easing back to the sea. Tap a day to see its leg on the map.</div>
+    <div class="seg-title">Crew · 6 paddlers, 3 boats</div>
+    <div class="crew-list">${crewRows}</div>
+    <div class="seg-title" style="margin-top:20px">Days</div>
+    <div class="ov-days">${dayRows}</div>`;
+}
 function renderPanel(d){
   const legs=[];
   legs.push(legRow('in',d.putin));
@@ -266,7 +322,7 @@ window.initMap=async function(){
   gPlaces=new google.maps.places.PlacesService(gmap);
   gInfo=new google.maps.InfoWindow();
   window._ready=true;
-  selectDay(1);
+  selectOverview();
 };
 
 function clearMap(){
@@ -290,6 +346,29 @@ function roadRoute(a,b,color,weight,dashed){
       dayRoutes.push(new google.maps.Polyline(opts));
     }
   });
+}
+
+function selectOverview(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-0').classList.add('active');
+  renderOverview();
+  if(!window._ready) return;
+  clearMap();
+  const b=new google.maps.LatLngBounds();
+  // markers for every put-in/take-out, hazard, and accommodation across all days
+  const seen=new Set();
+  DAYS.forEach(d=>{
+    const addPt=(pt,type,lab)=>{const k=pt.lat+','+pt.lng+type;if(seen.has(k))return;seen.add(k);marker(pt,type,lab);b.extend({lat:pt.lat,lng:pt.lng});};
+    addPt(d.putin,'in','');
+    if(d.hazard) addPt(d.hazard,'haz','!');
+    addPt(d.takeout,'out','');
+    if(d.accom) addPt(d.accom,'stay','H');
+    // paddling road proxy for each leg, thin
+    roadRoute(d.putin, d.hazard||d.takeout, '#3C6E63', 4, false);
+    if(d.hazard) roadRoute(d.hazard, d.takeout, '#3C6E63', 4, false);
+    if(d.accom) roadRoute(d.takeout, d.accom, '#8A5A2B', 3, true);
+  });
+  gmap.fitBounds(b,{top:50,bottom:50,left:50,right:50});
 }
 
 function selectDay(n){
@@ -351,7 +430,7 @@ function loadGoogleMaps(){
   if(!GOOGLE_MAPS_KEY||GOOGLE_MAPS_KEY.indexOf('PASTE')===0){
     const e=document.getElementById('maperr'); e.style.display='block';
     e.textContent='Add your Google Maps key in the setup block at the top of this file.';
-    selectDay(1); return;
+    selectOverview(); return;
   }
   const s=document.createElement('script');
   s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap&loading=async&libraries=places,routes`;
