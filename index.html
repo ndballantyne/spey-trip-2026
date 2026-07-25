@@ -9,11 +9,10 @@
 <!--  SETUP — paste your two things here, then save & upload.     -->
 <!-- ============================================================ -->
 <script>
-  // 1) Your Google Maps JavaScript API key (restricted to your GitHub Pages domain):
+  // 1) Google Maps key (needs Maps JavaScript API + Directions API enabled)
   const GOOGLE_MAPS_KEY = "AIzaSyDlEj06ydKnieJCdiplUfX0sBpkLZNInEI";
-
-  // 2) Your Firebase web config object (from Firebase console → Project settings → your web app):
-  const FIREBASE_CONFIG = {
+  // 2) Firebase web config (Project settings → Your apps → </>)
+  const firebaseConfig = {
     apiKey: "AIzaSyAQVU8XZBGRYPCiBZHeugnUl65-jL5fUU4",
     authDomain: "spey-trip-2026.firebaseapp.com",
     databaseURL: "https://spey-trip-2026-default-rtdb.europe-west1.firebasedatabase.app",
@@ -159,7 +158,7 @@
   <div class="topbar">
     <h1>River Spey</h1>
     <span class="sub">Loch Insh → the Moray Firth</span>
-    <div class="stats"><span><b>113.6</b> km</span><span><b>5</b> days</span><span><b>6</b> paddlers</span></div>
+    <div class="stats"><span><b>113.6</b> km</span><span><b>5</b> days</span><span><b>6</b> paddlers</span><span style="color:#C8791F;font-weight:800">BUILD-CHECK-A7</span></div>
   </div>
 
   <div class="tabs" id="tabs"></div>
