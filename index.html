@@ -105,6 +105,12 @@
 
   /* map */
   .map-card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:10px;overflow:hidden}
+  .map-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 4px 10px;flex-wrap:wrap}
+  .map-day-label{font-weight:700;font-size:.9rem;color:var(--river-deep)}
+  .map-day-btns{display:flex;gap:5px}
+  .mapbtn{font-size:.76rem;font-weight:700;padding:6px 11px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink-soft);cursor:pointer;transition:all .15s}
+  .mapbtn:hover{border-color:var(--river-pale);color:var(--ink)}
+  .mapbtn.active{background:var(--river);color:#fff;border-color:var(--river)}
   #routemap{width:100%;height:460px;border-radius:10px;z-index:0}
   .leaflet-container{background:#dfe6e2;font:inherit}
   .pin-pop{font-size:.82rem;line-height:1.4}
@@ -199,15 +205,26 @@
   <section class="block">
     <div class="block-head"><h2>The route</h2><div class="rule"></div></div>
     <div class="map-card">
+      <div class="map-controls">
+        <span class="map-day-label" id="mapDayLabel">Full route</span>
+        <div class="map-day-btns">
+          <button class="mapbtn active" onclick="zoomFullRoute();setMapBtn(this)">All</button>
+          <button class="mapbtn" onclick="zoomToDay(1);setMapBtn(this)">D1</button>
+          <button class="mapbtn" onclick="zoomToDay(2);setMapBtn(this)">D2</button>
+          <button class="mapbtn" onclick="zoomToDay(3);setMapBtn(this)">D3</button>
+          <button class="mapbtn" onclick="zoomToDay(4);setMapBtn(this)">D4</button>
+          <button class="mapbtn" onclick="zoomToDay(5);setMapBtn(this)">D5</button>
+        </div>
+      </div>
       <div id="routemap"></div>
       <div class="map-legend">
         <span><i class="dot" style="background:var(--river)"></i> Put-in / take-out</span>
         <span><i class="dot" style="background:var(--amber)"></i> Hazard</span>
-        <span><i class="dot" style="background:var(--ink)"></i> Overnight</span>
+        <span><i class="dot" style="background:#8A5A2B"></i> Overnight</span>
         <span>Click a pin for details + directions</span>
       </div>
     </div>
-    <p style="font-size:.76rem;color:var(--ink-soft);margin-top:.7rem">Zoomable map (Google Maps). Pins are James's confirmed drops — click any pin for its note and a Directions link. Knockando's spot is approximate; inspect on arrival.</p>
+    <p style="font-size:.76rem;color:var(--ink-soft);margin-top:.7rem">Opens on the full route; tap a day (here or in the cards below) to zoom to that leg. River line follows the Spey's course; dotted lines are road routes to each night's bed. Knockando's spot is approximate.</p>
   </section>
 
   <!-- CONDITIONS -->
@@ -401,7 +418,7 @@ const cEl=document.getElementById('contacts');
 contacts.forEach(c=>{const div=document.createElement('div');div.className='contact';const link=c.tel?`<a href="tel:${c.tel}">Call →</a>`:`<span class="cm">—</span>`;div.innerHTML=`<div><div class="cn">${c.cn}</div><div class="cm">${c.cm}</div></div>${link}`;cEl.appendChild(div)});
 
 // day cards
-window.toggle=function(n){const card=document.querySelector(`.day-card[data-day="${n}"]`);const body=document.getElementById('body-'+n);const open=card.classList.toggle('open');body.style.maxHeight=open?body.scrollHeight+'px':'0'};
+window.toggle=function(n){const card=document.querySelector(`.day-card[data-day="${n}"]`);const body=document.getElementById('body-'+n);const open=card.classList.toggle('open');body.style.maxHeight=open?body.scrollHeight+'px':'0'; if(open && window.zoomToDay) window.zoomToDay(n);};
 const iconFor={in:"⤓",out:"⤒",stay:"⌂",haz:"▲"};
 const classFor={in:"ico-in",out:"ico-out",stay:"ico-stay",haz:"ico-haz"};
 const daysEl=document.getElementById('days');
@@ -417,49 +434,200 @@ days.forEach(d=>{
   daysEl.appendChild(el);
 });
 
-// ---------- GOOGLE MAPS ----------
-const mapPins = [
-  {lat:57.1261482,lng:-3.9248624,type:"in",  name:"Day 1 put-in · near Loch Insh"},
-  {lat:57.1837957,lng:-3.8299229,type:"stay",name:"Aviemore · Old Bridge Bunkhouse (night 1 + Day 2 put-in)"},
-  {lat:57.3196585,lng:-3.6137972,type:"stay",name:"Grantown · Old Spey Bridge take-out (night 2)"},
-  {lat:57.4103,   lng:-3.3706,   type:"haz", name:"Knockando rapids · Grade 3 crux (approx)"},
-  {lat:57.4693257,lng:-3.2333641,type:"stay",name:"Aberlour take-out → Craigellachie (night 3)"},
-  {lat:57.5509736,lng:-3.1417779,type:"haz", name:"Boat o' Brig · wave trains"},
-  {lat:57.6147007,lng:-3.1050492,type:"stay",name:"Fochabers take-out (night 4)"},
-  {lat:57.675044, lng:-3.1081787,type:"out", name:"Spey Bay · finish (Garmouth/Kingston side)"}
+// ---------- GOOGLE MAPS (rich: river path + road routes + place cards) ----------
+const riverPath = [
+  {lat:57.1261,lng:-3.9249},
+  {lat:57.131,lng:-3.91},
+  {lat:57.1385,lng:-3.895},
+  {lat:57.144,lng:-3.885},
+  {lat:57.152,lng:-3.872},
+  {lat:57.161,lng:-3.86},
+  {lat:57.17,lng:-3.848},
+  {lat:57.178,lng:-3.838},
+  {lat:57.1838,lng:-3.8299},
+  {lat:57.19,lng:-3.82},
+  {lat:57.198,lng:-3.808},
+  {lat:57.208,lng:-3.792},
+  {lat:57.215,lng:-3.775},
+  {lat:57.222,lng:-3.755},
+  {lat:57.228,lng:-3.735},
+  {lat:57.236,lng:-3.715},
+  {lat:57.245,lng:-3.695},
+  {lat:57.256,lng:-3.678},
+  {lat:57.268,lng:-3.662},
+  {lat:57.282,lng:-3.648},
+  {lat:57.296,lng:-3.636},
+  {lat:57.308,lng:-3.625},
+  {lat:57.3197,lng:-3.6138},
+  {lat:57.33,lng:-3.595},
+  {lat:57.338,lng:-3.575},
+  {lat:57.342,lng:-3.55},
+  {lat:57.345,lng:-3.525},
+  {lat:57.352,lng:-3.5},
+  {lat:57.36,lng:-3.478},
+  {lat:57.372,lng:-3.458},
+  {lat:57.385,lng:-3.44},
+  {lat:57.396,lng:-3.42},
+  {lat:57.404,lng:-3.398},
+  {lat:57.4103,lng:-3.3706},
+  {lat:57.418,lng:-3.345},
+  {lat:57.428,lng:-3.32},
+  {lat:57.438,lng:-3.295},
+  {lat:57.448,lng:-3.272},
+  {lat:57.458,lng:-3.25},
+  {lat:57.465,lng:-3.24},
+  {lat:57.4693,lng:-3.2334},
+  {lat:57.478,lng:-3.22},
+  {lat:57.488,lng:-3.205},
+  {lat:57.499,lng:-3.195},
+  {lat:57.51,lng:-3.185},
+  {lat:57.523,lng:-3.172},
+  {lat:57.535,lng:-3.16},
+  {lat:57.547,lng:-3.148},
+  {lat:57.551,lng:-3.1418},
+  {lat:57.562,lng:-3.135},
+  {lat:57.575,lng:-3.128},
+  {lat:57.588,lng:-3.12},
+  {lat:57.6,lng:-3.112},
+  {lat:57.6147,lng:-3.105},
+  {lat:57.625,lng:-3.103},
+  {lat:57.638,lng:-3.103},
+  {lat:57.65,lng:-3.105},
+  {lat:57.662,lng:-3.107},
+  {lat:57.675,lng:-3.1082}
 ];
-const pinColour={in:"#3C6E63",out:"#3C6E63",stay:"#20261F",haz:"#C8791F"};
-window.initMap = function(){
-  const map=new google.maps.Map(document.getElementById('routemap'),{
+
+// Trip stops. paddleStop = a put-in/take-out on the river. If it has an `accom`, that's
+// the night's accommodation (a separate point) we draw a ROAD route to.
+const stops = [
+  {lat:57.1261482,lng:-3.9248624,type:"in",  day:1, name:"Day 1 Put-in \u00b7 near Loch Insh", detail:"Launch into the upper Spey. 11.3km, Grade 1."},
+  {lat:57.1837957,lng:-3.8299229,type:"out", day:1, name:"Aviemore Take-out", detail:"Day 1 exit \u00b7 also Day 2 put-in.",
+     accom:{lat:57.1838545,lng:-3.830408,name:"Old Bridge Bunkhouse",query:"Old Bridge Bunkhouse Aviemore",note:"Night 1 \u00b7 4-bunk room"}},
+  {lat:57.3196585,lng:-3.6137972,type:"out", day:2, name:"Grantown Take-out (Old Spey Bridge)", detail:"Day 2 exit \u00b7 24.6km, Grade 1/2.",
+     accom:{lat:57.3295808,lng:-3.6099836,name:"Ben Mhor Hotel",query:"Ben Mhor Hotel Grantown-on-Spey",note:"Night 2"}},
+  {lat:57.4103,lng:-3.3706,type:"haz", day:3, name:"Knockando rapids \u00b7 Grade 3 crux", detail:"Hardest water of the trip. Inspect on arrival; portage available. (Approx location.)"},
+  {lat:57.4693257,lng:-3.2333641,type:"out", day:3, name:"Aberlour Take-out", detail:"Day 3 exit \u00b7 41.4km. Also Day 4 put-in. ~5km road to the bed.",
+     accom:{lat:57.4898031,lng:-3.1889117,name:"Highlander Inn, Craigellachie",query:"Highlander Inn Craigellachie",note:"Night 3 \u00b7 whisky stop, meal booked"}},
+  {lat:57.5509736,lng:-3.1417779,type:"haz", day:4, name:"Boat o' Brig \u00b7 wave trains", detail:"Fast, powerful water and wave trains \u2014 pushy when up."},
+  {lat:57.6147007,lng:-3.1050492,type:"out", day:4, name:"Fochabers Take-out", detail:"Day 4 exit \u00b7 26.3km, Grade 1/2. Also Day 5 put-in.",
+     accom:{lat:57.6149444,lng:-3.0995265,name:"Gordon Arms Hotel, Fochabers",query:"Gordon Arms Hotel Fochabers",note:"Night 4"}},
+  {lat:57.675044,lng:-3.1081787,type:"out", day:5, name:"Spey Bay \u00b7 Finish", detail:"Journey's end \u2014 10km, Grade 1. Garmouth/Kingston side, not the Dolphin Centre."}
+];
+const pinColour={in:"#3C6E63",out:"#3C6E63",stay:"#8A5A2B",haz:"#C8791F"};
+
+let gmap, gInfo, gPlaces;
+window.initMap = async function(){
+  const {Map}=await google.maps.importLibrary("maps");
+  const {DirectionsService}=await google.maps.importLibrary("routes");
+  await google.maps.importLibrary("places");
+  gmap=new Map(document.getElementById('routemap'),{
     mapTypeId:'terrain', mapTypeControl:true, streetViewControl:false, fullscreenControl:true
   });
+  gInfo=new google.maps.InfoWindow();
+  gPlaces=new google.maps.places.PlacesService(gmap);
+
+  // 1) River path (the paddling route) \u2014 follows the Spey's real course
+  new google.maps.Polyline({path:riverPath,map:gmap,strokeColor:"#3C6E63",strokeOpacity:.9,strokeWeight:4});
+  // highlight the grade-3 stretch (Grantown->Aberlour) portion in amber
+  const cruxFrom=riverPath.findIndex(p=>Math.abs(p.lat-57.3197)<0.001);
+  const cruxTo=riverPath.findIndex(p=>Math.abs(p.lat-57.4693)<0.001);
+  if(cruxFrom>-1&&cruxTo>-1){
+    new google.maps.Polyline({path:riverPath.slice(cruxFrom,cruxTo+1),map:gmap,strokeColor:"#C8791F",strokeOpacity:.9,strokeWeight:6});
+  }
+
   const bounds=new google.maps.LatLngBounds();
-  const path=mapPins.map(p=>{const ll={lat:p.lat,lng:p.lng};bounds.extend(ll);return ll;});
-  new google.maps.Polyline({path,map,strokeColor:"#3C6E63",strokeOpacity:.8,strokeWeight:4});
-  new google.maps.Polyline({path:[path[2],path[3],path[4]],map,strokeColor:"#C8791F",strokeOpacity:.8,strokeWeight:6});
-  const info=new google.maps.InfoWindow();
-  mapPins.forEach(p=>{
-    const mk=new google.maps.Marker({position:{lat:p.lat,lng:p.lng},map,
-      icon:{path:google.maps.SymbolPath.CIRCLE,scale:p.type==='haz'?8:6,fillColor:pinColour[p.type],fillOpacity:1,strokeColor:"#F7F4EC",strokeWeight:2.5}});
-    const dir=`https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
-    mk.addListener('click',()=>{info.setContent(`<div class="pin-pop"><b>${p.name}</b><a href="${dir}" target="_blank" rel="noopener">Directions →</a></div>`);info.open(map,mk);});
+  riverPath.forEach(p=>bounds.extend(p));
+
+  // 2) River stop markers with rich info
+  stops.forEach(s=>{
+    bounds.extend({lat:s.lat,lng:s.lng});
+    const mk=new google.maps.Marker({position:{lat:s.lat,lng:s.lng},map:gmap,title:s.name,
+      icon:{path:google.maps.SymbolPath.CIRCLE,scale:s.type==='haz'?8:7,fillColor:pinColour[s.type],fillOpacity:1,strokeColor:"#F7F4EC",strokeWeight:2.5}});
+    mk.addListener('click',()=>openStopCard(s,mk));
+    // 3) accommodation marker + road route from take-out to bed
+    if(s.accom){
+      const a=s.accom;
+      bounds.extend({lat:a.lat,lng:a.lng});
+      const am=new google.maps.Marker({position:{lat:a.lat,lng:a.lng},map:gmap,title:a.name,
+        icon:{path:google.maps.SymbolPath.CIRCLE,scale:6,fillColor:"#8A5A2B",fillOpacity:1,strokeColor:"#F7F4EC",strokeWeight:2}});
+      am.addListener('click',()=>openAccomCard(a,am));
+      // road route
+      new DirectionsService().route({origin:{lat:s.lat,lng:s.lng},destination:{lat:a.lat,lng:a.lng},travelMode:'DRIVING'},
+        (res,status)=>{ if(status==='OK'){ new google.maps.Polyline({path:res.routes[0].overview_path,map:gmap,strokeColor:"#20261F",strokeOpacity:.6,strokeWeight:3,icons:[{icon:{path:'M 0,-1 0,1',strokeOpacity:1,scale:2},offset:'0',repeat:'10px'}]}); } });
+    }
   });
-  map.fitBounds(bounds,60);
+  gmap.fitBounds(bounds,50);
+  window._fullBounds = bounds;
+  // build per-day bounds (put-in through take-out + that day's accommodation)
+  window._dayBounds = {};
+  [1,2,3,4,5].forEach(dn=>{
+    const b=new google.maps.LatLngBounds();
+    let any=false;
+    stops.forEach(s=>{ if(s.day===dn){ b.extend({lat:s.lat,lng:s.lng}); any=true; if(s.accom) b.extend({lat:s.accom.lat,lng:s.accom.lng}); }});
+    // include the day's put-in even if it's the previous day's take-out point
+    if(any) window._dayBounds[dn]=b;
+  });
+  window._mapReady=true;
 };
+
+window.zoomToDay=function(dn){
+  if(!window._mapReady||!window._dayBounds||!window._dayBounds[dn]) return;
+  gmap.fitBounds(window._dayBounds[dn],60);
+  document.getElementById('mapDayLabel').textContent='Day '+dn;
+  document.getElementById('routemap').scrollIntoView({behavior:'smooth',block:'center'});
+};
+window.zoomFullRoute=function(){
+  if(!window._mapReady||!window._fullBounds) return;
+  gmap.fitBounds(window._fullBounds,50);
+  document.getElementById('mapDayLabel').textContent='Full route';
+};
+window.setMapBtn=function(btn){
+  document.querySelectorAll('.mapbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+};
+
+function cardShell(title,sub,body,dir){
+  return `<div class="pin-pop" style="max-width:240px"><b>${title}</b>${sub?`<div style="color:#4A5347;font-size:.78rem;margin:2px 0 6px">${sub}</div>`:''}${body||''}<a href="${dir}" target="_blank" rel="noopener">Directions \u2192</a></div>`;
+}
+function openStopCard(s,mk){
+  const dir=`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}`;
+  gInfo.setContent(cardShell(s.name,`Day ${s.day}`,`<div style="font-size:.82rem;color:#20261F;margin-bottom:6px">${s.detail}</div>`,dir));
+  gInfo.open(gmap,mk);
+}
+function openAccomCard(a,mk){
+  const dir=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.query)}`;
+  // start with basic, enrich with Places details (photo/rating/address)
+  gInfo.setContent(cardShell(a.name,a.note,'<div style="font-size:.8rem;color:#4A5347">Loading details\u2026</div>',dir));
+  gInfo.open(gmap,mk);
+  gPlaces.findPlaceFromQuery({query:a.query,fields:['place_id']},(r,st)=>{
+    if(st===google.maps.places.PlacesServiceStatus.OK && r[0]){
+      gPlaces.getDetails({placeId:r[0].place_id,fields:['name','formatted_address','rating','user_ratings_total','photos','formatted_phone_number']},(d,st2)=>{
+        if(st2===google.maps.places.PlacesServiceStatus.OK && d){
+          const photo=d.photos&&d.photos[0]?`<img src="${d.photos[0].getUrl({maxWidth:230,maxHeight:120})}" style="width:100%;border-radius:6px;margin:4px 0">`:'';
+          const rating=d.rating?`<div style="font-size:.78rem;color:#4A5347">\u2605 ${d.rating} (${d.user_ratings_total||0})</div>`:'';
+          const addr=d.formatted_address?`<div style="font-size:.74rem;color:#4A5347;margin-top:2px">${d.formatted_address}</div>`:'';
+          const tel=d.formatted_phone_number?`<div style="font-size:.74rem;color:#4A5347">${d.formatted_phone_number}</div>`:'';
+          gInfo.setContent(cardShell(a.name,a.note,`${photo}${rating}${addr}${tel}`,dir));
+        }
+      });
+    }
+  });
+}
+
 function loadGoogleMaps(){
   if(!GOOGLE_MAPS_KEY || GOOGLE_MAPS_KEY.indexOf('PASTE')===0){
     document.getElementById('routemap').innerHTML='<div style="padding:2rem;text-align:center;color:#4A5347;font-size:.85rem">Add your Google Maps key in the setup block at the top of this file to show the map. The Directions buttons in each day below work regardless.</div>';
     return;
   }
   const s=document.createElement('script');
-  s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap&loading=async`;
+  s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_KEY}&callback=initMap&loading=async&libraries=places,routes`;
   s.async=true;
-  s.onerror=()=>{document.getElementById('routemap').innerHTML='<div style="padding:2rem;text-align:center;color:#4A5347">Map failed to load — check the API key restrictions.</div>';};
+  s.onerror=()=>{document.getElementById('routemap').innerHTML='<div style="padding:2rem;text-align:center;color:#4A5347">Map failed to load \u2014 check the API key restrictions.</div>';};
   document.head.appendChild(s);
 }
 
-// init
-toggle(1);
+// init — open day 1 card (no map zoom; map opens on full route)
+(function(){const c=document.querySelector('.day-card[data-day="1"]');const b=document.getElementById('body-1');if(c&&b){c.classList.add('open');b.style.maxHeight=b.scrollHeight+'px';}})();
 renderKit();
 loadGoogleMaps();
 
