@@ -37,13 +37,13 @@
     --g1:#D6E4DE; --g12:#B9D4C8; --g23:#E7C79A;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
+  html,body{min-height:100%}
   body{
     background:var(--paper);color:var(--peat);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;line-height:1.5;
   }
-  .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+  .app{display:flex;flex-direction:column;min-height:100vh}
 
   /* header */
   .topbar{display:flex;align-items:baseline;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--white);flex:none}
@@ -63,7 +63,7 @@
   .tab.active .tk{color:var(--river-deep)}
 
   /* main split */
-  .split{display:flex;flex:1;min-height:0}
+  .split{display:flex;height:calc(100vh - 180px);min-height:480px}
   #map{flex:1.6;min-width:0;background:#d7ded9}
   .panel{flex:1;max-width:420px;min-width:320px;background:var(--paper);border-left:1px solid var(--line);overflow-y:auto;padding:22px 22px 40px}
 
@@ -173,8 +173,8 @@
   </div>
 
   <div class="kitbar">
-    <button class="kit-toggle" id="kitToggle" onclick="toggleKit()">Kit checklist <span class="kbadge">tap to open</span><span class="ksub">personal + live shared group list</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
-    <div class="kit-wrap" id="kitWrap">
+    <button class="kit-toggle open" id="kitToggle" onclick="toggleKit()">Kit checklist <span class="kbadge">personal + live shared</span><span class="ksub">tick your gear · group list syncs across everyone</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
+    <div class="kit-wrap" id="kitWrap" style="max-height:none">
       <div class="kit-inner">
         <div class="who">
           <label for="whoami" style="font-size:.8rem;color:var(--slate);font-weight:600">Packing as:</label>
@@ -444,7 +444,8 @@ let paddler="",personalState={},groupState={},db=null;
 function toggleKit(){
   const w=document.getElementById('kitWrap'),t=document.getElementById('kitToggle');
   const open=t.classList.toggle('open');
-  w.style.maxHeight=open?w.scrollHeight+'px':'0';
+  if(open){ w.style.maxHeight=w.scrollHeight+'px'; setTimeout(()=>{if(t.classList.contains('open'))w.style.maxHeight='none';},320); }
+  else { w.style.maxHeight=w.scrollHeight+'px'; requestAnimationFrame(()=>{w.style.maxHeight='0';}); }
 }
 </script>
 
