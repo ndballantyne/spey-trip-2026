@@ -33,13 +33,13 @@
     --g1:#D6E4DE; --g12:#B9D4C8; --g23:#E7C79A;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{min-height:100%}
+  html,body{height:100%}
   body{
     background:var(--paper);color:var(--peat);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     -webkit-font-smoothing:antialiased;line-height:1.5;
   }
-  .app{display:flex;flex-direction:column;min-height:100vh}
+  .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
   /* header */
   .topbar{display:flex;align-items:baseline;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--white);flex:none}
@@ -59,7 +59,7 @@
   .tab.active .tk{color:var(--river-deep)}
 
   /* main split — capped so the kit list below stays on-screen */
-  .split{display:flex;height:min(62vh,560px);min-height:420px}
+  .split{display:flex;flex:1;min-height:0}
   #map{flex:1.6;min-width:0;background:#d7ded9}
   .panel{flex:1;max-width:440px;min-width:330px;background:#dfe4dc;border-left:1px solid #b9c2b4;overflow-y:auto;padding:24px 22px 40px}
 
@@ -102,23 +102,43 @@
   .shuttle{margin-top:14px;display:flex;gap:10px;background:var(--amber-pale);border-left:3px solid var(--amber);border-radius:8px;padding:11px 13px}
   .shuttle-txt{font-size:.82rem;color:#7a4f14}
 
-  /* kit toggle strip below */
-  .kit-inner{padding:0 20px 22px}
-  .who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-  .who select{font-size:.88rem;padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:var(--paper);font-weight:600}
-  .who .hint{font-size:.72rem;color:var(--slate);flex-basis:100%}
-  .kit-grid{display:grid;grid-template-columns:1fr;gap:14px}
-  @media(min-width:720px){.kit-grid{grid-template-columns:1fr 1fr}}
-  .kit-col{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-  .kit-col h3{font-size:.84rem;text-transform:uppercase;letter-spacing:.06em;color:var(--river);margin-bottom:.2rem;display:flex;gap:8px;align-items:center}
+  /* kit tab — distinct amber accent */
+  .tab-kit .tg{background:var(--amber);color:#fff}
+  .tab-kit.active{border-bottom-color:var(--amber)}
+  .tab-kit.active .tk{color:var(--amber)}
+
+  /* kit view — fills main area */
+  .kitview{flex:1;overflow-y:auto;padding:24px 22px 60px;width:100%}
+  .kitview-inner{max-width:1100px;margin:0 auto}
+  .kitview-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+  .kitview-title{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:-.01em}
+  .kitview-sub{font-size:.85rem;color:var(--slate);margin-top:4px;max-width:520px}
+  .kitview .who{display:flex;align-items:center;gap:9px;flex-wrap:nowrap;margin:0}
+  .kitview .who label{font-size:.78rem;color:var(--slate);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .kitview .who select{font-size:.9rem;padding:9px 13px;border-radius:9px;border:1px solid var(--line);background:#fff;font-weight:600}
+  .kit-grid{display:grid;grid-template-columns:1fr;gap:18px}
+  @media(min-width:760px){.kit-grid{grid-template-columns:1fr 1fr}}
+  .kit-col{background:#fff;border:1px solid #c3cbbe;border-radius:14px;padding:18px 20px;box-shadow:0 1px 4px rgba(28,38,32,.06)}
+  .kit-col h3{font-size:.95rem;text-transform:uppercase;letter-spacing:.05em;color:var(--river-deep);margin-bottom:.2rem;display:flex;gap:8px;align-items:center}
   .badge{font-size:.56rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:20px}
-  .badge.shared{background:var(--river);color:#fff} .badge.mine{background:var(--paper-2);color:var(--slate)}
-  .kit-col .sub{font-size:.74rem;color:var(--slate);margin-bottom:.7rem}
-  .chk{display:flex;align-items:flex-start;gap:8px;padding:4px 0;cursor:pointer;font-size:.86rem}
-  .chk input{margin-top:3px;accent-color:var(--river);width:15px;height:15px;flex:none}
+  .badge.shared{background:var(--river);color:#fff} .badge.mine{background:var(--amber);color:#fff}
+  .kit-col .sub{font-size:.78rem;color:var(--slate);margin-bottom:.9rem}
+  /* progress bar */
+  .kit-prog{display:flex;align-items:center;gap:10px;margin:0 0 14px}
+  .kit-prog-bar{flex:1;height:8px;background:var(--paper-2);border-radius:20px;overflow:hidden}
+  .kit-prog-bar i{display:block;height:100%;background:var(--river);border-radius:20px;transition:width .3s}
+  .kit-prog-num{font-size:.78rem;font-weight:800;color:var(--river-deep);white-space:nowrap}
+  /* group summary */
+  .kit-summary{font-size:.8rem;border-radius:9px;padding:9px 12px;margin-bottom:10px;line-height:1.45}
+  .kit-summary.out{background:var(--amber-pale);color:#7a4f14}
+  .kit-summary.done{background:#d9ece2;color:var(--river-deep);font-weight:700}
+  .kit-summary.who-line{background:var(--paper-2);color:var(--slate)}
+  .chk{display:flex;align-items:flex-start;gap:9px;padding:6px 0;cursor:pointer;font-size:.9rem;border-bottom:1px solid #eee6d6}
+  .chk:last-child{border-bottom:none}
+  .chk input{margin-top:3px;accent-color:var(--river);width:16px;height:16px;flex:none}
   .chk.done span.lbl{text-decoration:line-through;color:var(--river-pale)}
-  .chk .by{margin-left:auto;font-size:.66rem;color:var(--river);font-weight:700;white-space:nowrap;padding-left:6px}
-  .synced{font-size:.7rem;color:var(--river);margin-top:.5rem;display:flex;align-items:center;gap:6px}
+  .chk .by{margin-left:auto;font-size:.68rem;color:var(--river);font-weight:700;white-space:nowrap;padding-left:6px}
+  .synced{font-size:.72rem;color:var(--river);margin-top:.7rem;display:flex;align-items:center;gap:6px}
   .live{width:7px;height:7px;border-radius:50%;background:var(--river);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   .maperr{padding:2rem;text-align:center;color:var(--slate);font-size:.85rem}
@@ -143,13 +163,6 @@
   .ov-daymeta{font-size:.76rem;color:var(--slate);flex:none}
 
   /* kit bar — made prominent */
-  .kitbar{flex:none;border-top:2px solid var(--river);background:var(--river-deep)}
-  .kit-toggle{width:100%;text-align:left;padding:14px 20px;background:none;border:none;font-weight:800;font-size:.98rem;color:#fff;cursor:pointer;display:flex;align-items:center;gap:10px;letter-spacing:.01em}
-  .kit-toggle .ksub{font-weight:500;color:var(--river-pale);font-size:.8rem}
-  .kit-toggle .kbadge{background:var(--amber);color:#fff;font-size:.62rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:3px 9px;border-radius:20px;margin-left:4px}
-  .kit-toggle .chev{margin-left:auto;transition:transform .2s;color:#fff}
-  .kit-toggle.open .chev{transform:rotate(180deg)}
-  .kit-wrap{max-height:0;overflow:hidden;transition:max-height .3s;background:var(--paper)}
 </style>
 </head>
 <body>
@@ -158,30 +171,34 @@
   <div class="topbar">
     <h1>River Spey</h1>
     <span class="sub">Loch Insh → the Moray Firth</span>
-    <div class="stats"><span><b>113.6</b> km</span><span><b>5</b> days</span><span><b>6</b> paddlers</span><span style="color:#C8791F;font-weight:800">BUILD-CHECK-A7</span></div>
+    <div class="stats"><span><b>113.6</b> km</span><span><b>5</b> days</span><span><b>6</b> paddlers</span></div>
   </div>
 
   <div class="tabs" id="tabs"></div>
 
-  <div class="split">
+  <!-- TRIP VIEW: map + day panel -->
+  <div class="split" id="tripView">
     <div id="map"><div class="maperr" id="maperr" style="display:none"></div></div>
     <div class="panel" id="panel"></div>
   </div>
 
-  <div class="kitbar">
-    <button class="kit-toggle open" id="kitToggle" onclick="toggleKit()">Kit checklist <span class="kbadge">personal + live shared</span><span class="ksub">tick your gear · group list syncs across everyone</span><svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg></button>
-    <div class="kit-wrap" id="kitWrap" style="max-height:none">
-      <div class="kit-inner">
-        <div class="who">
-          <label for="whoami" style="font-size:.8rem;color:var(--slate);font-weight:600">Packing as:</label>
-          <select id="whoami" onchange="setPaddler()">
-            <option value="">— your name —</option>
-            <option>Neil</option><option>James</option><option>Fraser</option><option>Dagmar</option><option>Michael</option><option>Rory</option>
-          </select>
-          <span class="hint">Personal list saves to you. Group list is shared live with everyone on the link.</span>
-        </div>
-        <div class="kit-grid" id="kit"></div>
+  <!-- KIT VIEW: fills the main area when the Kit tab is active -->
+  <div class="kitview" id="kitView" style="display:none">
+    <div class="kitview-inner">
+    <div class="kitview-head">
+      <div>
+        <h2 class="kitview-title">Kit checklist</h2>
+        <p class="kitview-sub">Your personal list saves to you. The group list syncs live across everyone on the link.</p>
       </div>
+      <div class="who">
+        <label for="whoami">Packing as</label>
+        <select id="whoami" onchange="setPaddler()">
+          <option value="">— your name —</option>
+          <option>Neil</option><option>James</option><option>Fraser</option><option>Dagmar</option><option>Michael</option><option>Rory</option>
+        </select>
+      </div>
+    </div>
+    <div class="kit-grid" id="kit"></div>
     </div>
   </div>
 
@@ -247,6 +264,12 @@ DAYS.forEach(d=>{
   b.innerHTML=`<div class="td">Day ${d.n}</div><div class="tk">${d.route.split(' → ')[0]}→${d.route.split(' → ')[1].slice(0,4)}</div><span class="tg" style="background:${gcol}">${d.grade}</span>`;
   tabsEl.appendChild(b);
 });
+// Kit tab last — visually distinct
+const kt=document.createElement('button');
+kt.className='tab tab-kit'; kt.id='tab-kit';
+kt.onclick=()=>selectKit();
+kt.innerHTML=`<div class="td">Gear</div><div class="tk">Kit list</div><span class="tg" id="kitTabProg" style="background:var(--amber);color:#fff">PACK</span>`;
+tabsEl.appendChild(kt);
 
 // ---------------- PANEL ----------------
 function renderOverview(){
@@ -359,7 +382,22 @@ function roadRoute(a,b,color,weight,dashed){
   });
 }
 
+function showTripView(){
+  document.getElementById('tripView').style.display='flex';
+  document.getElementById('kitView').style.display='none';
+  if(window.gmap && window._ready) setTimeout(()=>google.maps.event.trigger(gmap,'resize'),50);
+}
+function selectKit(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-kit').classList.add('active');
+  document.getElementById('tripView').style.display='none';
+  document.getElementById('kitView').style.display='block';
+  renderKit();
+}
+window.selectKit=selectKit;
+
 function selectOverview(){
+  showTripView();
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-0').classList.add('active');
   renderOverview();
@@ -384,6 +422,7 @@ function selectOverview(){
 }
 
 function selectDay(n){
+  showTripView();
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+n).classList.add('active');
   const d=DAYS.find(x=>x.n===n);
@@ -454,12 +493,7 @@ function loadGoogleMaps(){
 
 // ---------------- KIT (Firebase shared + personal) ----------------
 let paddler="",personalState={},groupState={},db=null;
-function toggleKit(){
-  const w=document.getElementById('kitWrap'),t=document.getElementById('kitToggle');
-  const open=t.classList.toggle('open');
-  if(open){ w.style.maxHeight=w.scrollHeight+'px'; setTimeout(()=>{if(t.classList.contains('open'))w.style.maxHeight='none';},320); }
-  else { w.style.maxHeight=w.scrollHeight+'px'; requestAnimationFrame(()=>{w.style.maxHeight='0';}); }
-}
+
 </script>
 
 <script type="module">
@@ -496,15 +530,43 @@ window.flipGroup=async function(i,box){
 window.renderKit=function(){
   const kitEl=document.getElementById('kit'); if(!kitEl) return;
   kitEl.innerHTML='';
-  const P=KIT.personal;
+  const P=KIT.personal, G=KIT.group;
+
+  // ---- progress calcs ----
+  const pDone=P.items.filter((_,i)=>personalState['p'+i]).length;
+  const pTotal=P.items.length;
+  const gDone=G.items.filter((_,i)=>groupState['g'+i]&&groupState['g'+i].done).length;
+  const gTotal=G.items.length;
+  // group: who has sorted what, and what's outstanding
+  const gOutstanding=G.items.filter((_,i)=>!(groupState['g'+i]&&groupState['g'+i].done));
+  const contributors={};
+  G.items.forEach((_,i)=>{const st=groupState['g'+i];if(st&&st.done){contributors[st.by]=(contributors[st.by]||0)+1;}});
+
+  // update the Kit tab pill to show combined progress
+  const tabProg=document.getElementById('kitTabProg');
+  if(tabProg){ tabProg.textContent = paddler ? `${pDone}/${pTotal}` : 'PACK'; }
+
+  // ---- personal column ----
   const pr=P.items.map((it,i)=>{const done=personalState['p'+i];return `<label class="chk ${done?'done':''}"><input type="checkbox" ${done?'checked':''} onchange="flipPersonal(${i},this)"><span class="lbl">${it}</span></label>`;}).join('');
+  const pBar=`<div class="kit-prog"><div class="kit-prog-bar"><i style="width:${pTotal?Math.round(pDone/pTotal*100):0}%"></i></div><span class="kit-prog-num">${pDone}/${pTotal}</span></div>`;
   const pd=document.createElement('div');pd.className='kit-col';
-  pd.innerHTML=`<h3>${P.title} <span class="badge mine">${P.badgeText}</span></h3><div class="sub">${P.sub}${paddler?' · <b>'+paddler+'</b>':''}</div>${pr}`;
+  pd.innerHTML=`<h3>${P.title} <span class="badge mine">${P.badgeText}</span></h3><div class="sub">${paddler?'Packing as <b>'+paddler+'</b>':'Pick your name above to track your own kit'}</div>${paddler?pBar:''}${pr}`;
   kitEl.appendChild(pd);
-  const G=KIT.group;
+
+  // ---- group column ----
   const gr=G.items.map((it,i)=>{const st=groupState['g'+i];const by=st&&st.done?`<span class="by">✓ ${st.by}</span>`:'';return `<label class="chk ${st&&st.done?'done':''}"><input type="checkbox" ${st&&st.done?'checked':''} onchange="flipGroup(${i},this)"><span class="lbl">${it}</span>${by}</label>`;}).join('');
+  const gBar=`<div class="kit-prog"><div class="kit-prog-bar"><i style="width:${gTotal?Math.round(gDone/gTotal*100):0}%"></i></div><span class="kit-prog-num">${gDone}/${gTotal}</span></div>`;
+  // summary: outstanding items + who's bringing what
+  let summary='';
+  if(gOutstanding.length){
+    summary=`<div class="kit-summary out"><b>Still needed (${gOutstanding.length}):</b> ${gOutstanding.join(', ')}</div>`;
+  } else {
+    summary=`<div class="kit-summary done">✓ Group kit all sorted</div>`;
+  }
+  const contribNames=Object.keys(contributors);
+  const contribLine=contribNames.length?`<div class="kit-summary who-line">Bringing: ${contribNames.map(n=>`${n} (${contributors[n]})`).join(' · ')}</div>`:'';
   const gd=document.createElement('div');gd.className='kit-col';
-  gd.innerHTML=`<h3>${G.title} <span class="badge shared">${G.badgeText}</span></h3><div class="sub">${G.sub}</div>${gr}<div class="synced"><span class="live"></span> Live across everyone on the link</div>`;
+  gd.innerHTML=`<h3>${G.title} <span class="badge shared">${G.badgeText}</span></h3><div class="sub">${G.sub}</div>${gBar}${summary}${contribLine}${gr}<div class="synced"><span class="live"></span> Live across everyone on the link</div>`;
   kitEl.appendChild(gd);
 };
 renderKit();
@@ -516,11 +578,11 @@ renderKit();
 // CSS integrity self-test — proves the stylesheet loaded intact on THIS render.
 window.addEventListener('load',function(){
   setTimeout(function(){
-    var kb=document.querySelector('.kitbar');
+    var kb=document.querySelector('.tab-kit .tg');
     if(!kb) return;
     var bg=getComputedStyle(kb).backgroundColor;
-    // expected dark green rgb(32, 68, 62)
-    if(bg!=='rgb(32, 68, 62)'){
+    // expected amber rgb(200, 121, 31)
+    if(bg!=='rgb(200, 121, 31)'){
       var banner=document.createElement('div');
       banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:#b00;color:#fff;padding:10px;text-align:center;font:600 14px sans-serif';
       banner.textContent='⚠ CSS did not load correctly — the uploaded file is corrupted the uploaded file is corrupted. Re-upload the file whole instead of pasting its text.';
